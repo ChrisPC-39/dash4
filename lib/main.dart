@@ -29,11 +29,11 @@ void main() async {
 
   if (itemBox.isEmpty) {
     final item1 = Item(id: 1, name: 'Item 1');
-    final item2 = Item(id: 2, name: 'Item 2', isSection: true);
+    final item2 = Item(id: 2, name: 'Item 2');
     final item3 = Item(id: 3, name: 'Item 3');
-    final item4 = Item(id: 4, name: 'Item 4', isSection: true);
-    final item5 = Item(id: 6, name: 'Item 5');
-    final item6 = Item(id: 6, name: 'Item 6');
+    final item4 = Item(id: 4, name: 'Item 4');
+    final item5 = Item(id: 6, name: 'Item 5', isSection: true);
+    final item6 = Item(id: 6, name: 'Item 6', isSection: true);
     final item7 = Item(id: 7, name: 'Item 7', isSection: true);
     itemBox.add(item1);
     itemBox.add(item2);

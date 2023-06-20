@@ -49,7 +49,11 @@ class _OfflineScreenState extends State<OfflineScreen> {
                 return _buildSection(item, index, itemBox);
               }
 
-              return _buildItem(item, index, itemBox);
+              if(item.isVisible) {
+                return _buildItem(item, index, itemBox);
+              }
+
+              return Container(key: UniqueKey());
             },
           );
         },
@@ -58,113 +62,110 @@ class _OfflineScreenState extends State<OfflineScreen> {
   }
 
   Widget _buildItem(Item item, int index, Box box) {
-    return Visibility(
+    return Card(
       key: ValueKey(item.id),
-      visible: item.isVisible,
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.0),
-        ),
-        child: ReorderableDelayedDragStartListener(
-          index: index,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            decoration: BoxDecoration(
-              color: itemColor,
-              borderRadius: BorderRadius.circular(10.0),
-              // Other decorations for the container
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  item.isEditing
-                      ? IconButton(
-                          onPressed: () {
-                            updateItemEditing(
-                              box: box,
-                              index: index,
-                              isEditing: false,
-                            );
-                          },
-                          icon: const Icon(Icons.clear),
-                        )
-                      : Checkbox(
-                          value: item.isSelected,
-                          activeColor: Theme.of(context)
-                              .buttonTheme
-                              .colorScheme!
-                              .background,
-                          onChanged: (newVal) {
-                            updateItemSelected(
-                              box: box,
-                              index: index,
-                              isSelected: newVal!,
-                            );
-                          },
-                        ),
-                  Flexible(
-                    child: GestureDetector(
-                      onTap: () {
-                        textEditingController.text = item.name;
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.0),
+      ),
+      child: ReorderableDelayedDragStartListener(
+        index: index,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          decoration: BoxDecoration(
+            color: itemColor,
+            borderRadius: BorderRadius.circular(10.0),
+            // Other decorations for the container
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                item.isEditing
+                    ? IconButton(
+                        onPressed: () {
+                          updateItemEditing(
+                            box: box,
+                            index: index,
+                            isEditing: false,
+                          );
+                        },
+                        icon: const Icon(Icons.clear),
+                      )
+                    : Checkbox(
+                        value: item.isSelected,
+                        activeColor: Theme.of(context)
+                            .buttonTheme
+                            .colorScheme!
+                            .background,
+                        onChanged: (newVal) {
+                          updateItemSelected(
+                            box: box,
+                            index: index,
+                            isSelected: newVal!,
+                          );
+                        },
+                      ),
+                Flexible(
+                  child: GestureDetector(
+                    onTap: () {
+                      textEditingController.text = item.name;
 
-                        updateItemEditing(
-                          box: box,
-                          index: index,
-                          isEditing: true,
-                        );
-                      },
-                      child: item.isEditing
-                          ? TextField(
-                              autofocus: true,
-                              textAlign: TextAlign.center,
-                              controller: textEditingController,
-                              onSubmitted: (value) {
-                                updateItemEditing(
-                                  box: box,
-                                  index: index,
-                                  isEditing: false,
-                                );
+                      updateItemEditing(
+                        box: box,
+                        index: index,
+                        isEditing: true,
+                      );
+                    },
+                    child: item.isEditing
+                        ? TextField(
+                            autofocus: true,
+                            textAlign: TextAlign.center,
+                            controller: textEditingController,
+                            onSubmitted: (value) {
+                              updateItemEditing(
+                                box: box,
+                                index: index,
+                                isEditing: false,
+                              );
 
-                                updateItemName(
-                                  box: box,
-                                  index: index,
-                                  newTitle: textEditingController.text,
-                                );
-                              },
-                            )
-                          : Text(
-                              item.name,
-                              textAlign: TextAlign.center,
-                            ),
-                    ),
+                              updateItemName(
+                                box: box,
+                                index: index,
+                                newTitle: textEditingController.text,
+                              );
+                            },
+                          )
+                        : Text(
+                            item.name,
+                            textAlign: TextAlign.center,
+                          ),
                   ),
-                  item.isEditing
-                      ? IconButton(
-                          onPressed: () {
-                            updateItemEditing(
-                              box: box,
-                              index: index,
-                              isEditing: false,
-                            );
+                ),
+                item.isEditing
+                    ? IconButton(
+                        onPressed: () {
+                          updateItemEditing(
+                            box: box,
+                            index: index,
+                            isEditing: false,
+                          );
 
-                            updateItemName(
-                              box: box,
-                              index: index,
-                              newTitle: textEditingController.text,
-                            );
-                          },
-                          icon: const Icon(Icons.check),
-                        )
-                      : IconButton(
-                          onPressed: () {
-                            box.deleteAt(index);
-                          },
-                          icon: const Icon(Icons.delete_outline),
-                        ),
-                ],
-              ),
+                          updateItemName(
+                            box: box,
+                            index: index,
+                            newTitle: textEditingController.text,
+                          );
+                        },
+                        icon: const Icon(Icons.check),
+                      )
+                    : IconButton(
+                        onPressed: () {
+                          box.deleteAt(index);
+                        },
+                        icon: const Icon(Icons.delete_outline),
+                      ),
+              ],
             ),
           ),
         ),
@@ -282,8 +283,18 @@ class _OfflineScreenState extends State<OfflineScreen> {
                   ),
                 ),
                 const SizedBox(width: 5),
+                item.isVisible
+                    ? const Icon(
+                        Icons.arrow_drop_down,
+                        color: Colors.grey,
+                      )
+                    : const Icon(
+                        Icons.arrow_right,
+                        color: Colors.grey,
+                      ),
+                const SizedBox(width: 5),
                 Text(
-                  item.name + item.isVisible.toString(),
+                  item.name + item.subItems.toString(),
                   style: const TextStyle(
                     color: Colors.grey,
                     fontWeight: FontWeight.bold,

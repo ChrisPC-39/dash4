@@ -24,6 +24,9 @@ class Item {
   @HiveField(5)
   final bool isVisible;
 
+  @HiveField(6)
+  final List<int> subItems;
+
   Item({
     required this.name,
     required this.id,
@@ -31,5 +34,6 @@ class Item {
     this.isSelected = false,
     this.isEditing = false,
     this.isVisible = true,
+    this.subItems = const [],
   });
 }
