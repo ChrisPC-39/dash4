@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 
-import 'database/category.dart';
 import 'database/item.dart';
 
 void main() async {
@@ -23,13 +22,10 @@ void main() async {
   }
 
   Hive.registerAdapter(ItemAdapter());
-  Hive.registerAdapter(MyCategoryAdapter());
 
   await Hive.openBox(itemBoxName);
-  await Hive.openBox(categoryBoxName);
 
   final itemBox = Hive.box(itemBoxName);
-  final categoryBox = Hive.box(categoryBoxName);
 
   if (itemBox.isEmpty) {
     final item1 = Item(id: 1, name: 'Item 1');
@@ -50,23 +46,6 @@ void main() async {
     itemBox.add(item7);
     itemBox.add(item8);
     itemBox.add(item9);
-  }
-
-  if (categoryBox.isEmpty) {
-    final item1 = Item(id: 1, name: 'Item 1');
-    final item2 = Item(id: 2, name: 'Item 2');
-    final item3 = Item(id: 3, name: 'Item 3');
-    final item4 = Item(id: 4, name: 'Item 4');
-    final categoryMAIN = MyCategory(name: mainCategoryName, id: 0);
-    final category1 = MyCategory(name: "Section 1", id: 1, subItems: [item1]);
-    final category2 =
-        MyCategory(name: "Section 2", id: 2, subItems: [item2, item3]);
-    final category3 = MyCategory(name: "Section 3", id: 3, subItems: [item4]);
-
-    categoryBox.add(categoryMAIN);
-    categoryBox.add(category1);
-    categoryBox.add(category2);
-    categoryBox.add(category3);
   }
 
   runApp(MaterialApp(
