@@ -49,11 +49,11 @@ class _OfflineScreenState extends State<OfflineScreen> {
                 return _buildSection(item, index, itemBox);
               }
 
-              if(item.isVisible) {
+              if (item.isVisible) {
                 return _buildItem(item, index, itemBox);
               }
 
-              return Container(key: UniqueKey());
+              return const SizedBox(height: 0, width: 0, key: Key(""));
             },
           );
         },
@@ -268,7 +268,7 @@ class _OfflineScreenState extends State<OfflineScreen> {
                   updateItemVisibility(
                     box: box,
                     index: i,
-                    isVisible: !subItem.isVisible,
+                    isVisible: !item.isVisible,
                   );
                 }
               });
@@ -294,7 +294,7 @@ class _OfflineScreenState extends State<OfflineScreen> {
                       ),
                 const SizedBox(width: 5),
                 Text(
-                  item.name + item.subItems.toString(),
+                  item.name,
                   style: const TextStyle(
                     color: Colors.grey,
                     fontWeight: FontWeight.bold,

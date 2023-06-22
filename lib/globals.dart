@@ -1,11 +1,4 @@
-import 'database/item.dart';
 
-const String itemBoxName = "itemBoxName${33}";
-
-Item section(int id) {
-  return Item(
-    name: 'Section $id',
-    id: id,
-    isSection: true,
-  );
-}
+const String itemBoxName = "itemBoxName${39}";
+const String categoryBoxName = "categoryFormName${2}";
+const String mainCategoryName = "MAIN CATEGORY";

@@ -1,49 +1,40 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'item.dart';
+part of 'category.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class ItemAdapter extends TypeAdapter<Item> {
+class MyCategoryAdapter extends TypeAdapter<MyCategory> {
   @override
-  final int typeId = 1;
+  final int typeId = 0;
 
   @override
-  Item read(BinaryReader reader) {
+  MyCategory read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Item(
+    return MyCategory(
       name: fields[1] as String,
       id: fields[0] as int,
-      isSection: fields[2] as bool,
-      isSelected: fields[3] as bool,
-      isEditing: fields[4] as bool,
-      isVisible: fields[5] as bool,
-      subItems: (fields[6] as List).cast<int>(),
+      isVisible: fields[2] as bool,
+      subItems: (fields[3] as List).cast<dynamic>(),
     );
   }
 
   @override
-  void write(BinaryWriter writer, Item obj) {
+  void write(BinaryWriter writer, MyCategory obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
       ..write(obj.name)
       ..writeByte(2)
-      ..write(obj.isSection)
-      ..writeByte(3)
-      ..write(obj.isSelected)
-      ..writeByte(4)
-      ..write(obj.isEditing)
-      ..writeByte(5)
       ..write(obj.isVisible)
-      ..writeByte(6)
+      ..writeByte(3)
       ..write(obj.subItems);
   }
 
@@ -53,7 +44,7 @@ class ItemAdapter extends TypeAdapter<Item> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ItemAdapter &&
+      other is MyCategoryAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
