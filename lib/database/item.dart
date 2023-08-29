@@ -1,5 +1,6 @@
 //flutter pub run build_runner build --delete-conflicting-outputs
 
+import 'package:dash4/database/tag.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 
@@ -30,6 +31,9 @@ class Item {
   @HiveField(6)
   final List<Uint8List>? images;
 
+  @HiveField(7)
+  final List<Tag>? tags;
+
   Item({
     required this.name,
     required this.id,
@@ -38,10 +42,12 @@ class Item {
     this.isEditing = false,
     this.isVisible = true,
     this.images,
+    this.tags,
   });
 }
 
-Future<void> addNewImages(List<Uint8List> images, Uint8List imageBytes, int index) async {
+Future<void> addNewImages(
+    List<Uint8List> images, Uint8List imageBytes, int index) async {
   var box = Hive.box(itemBoxName);
 
   images.add(imageBytes);
@@ -54,7 +60,7 @@ Future<void> storeImage(Uint8List imageBytes, int index) async {
 
   List<dynamic>? allImages = (box.getAt(index) as Item).images;
 
-  if(allImages != null) {
+  if (allImages != null) {
     images.addAll(allImages.cast<Uint8List>());
   }
 

@@ -1,7 +1,7 @@
 import 'dart:io';
 
+import 'package:dash4/database/tag.dart';
 import 'package:dash4/globals.dart';
-import 'package:dash4/screens/oflline_screens/sub_screens/list_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -9,7 +9,7 @@ import 'package:path_provider/path_provider.dart' as path_provider;
 
 import 'database/item.dart';
 import 'database/setup.dart';
-import 'screens/oflline_screens/item_view_screen.dart';
+import 'screens/offline_screens/item_view_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,12 +25,19 @@ void main() async {
 
   Hive.registerAdapter(ItemAdapter());
   Hive.registerAdapter(SetupAdapter());
+  Hive.registerAdapter(TagAdapter());
 
   await Hive.openBox(itemBoxName);
   await Hive.openBox(setupBoxName);
+  await Hive.openBox(tagBoxName);
 
   final itemBox = Hive.box(itemBoxName);
   final setupBox = Hive.box(setupBoxName);
+  final tagBox = Hive.box(tagBoxName);
+
+  if(tagBox.isEmpty) {
+    tagBox.add(Tag(label: "Tag 1", color: Colors.green.value));
+  }
 
   if (itemBox.isEmpty) {
     final item1 = Item(id: 1, name: 'Item 1');
@@ -42,6 +49,7 @@ void main() async {
     final item7 = Item(id: 7, name: 'Item 7', isSection: true);
     final item8 = Item(id: 8, name: 'Item 8');
     final item9 = Item(id: 9, name: 'Item 9');
+    final item10 = Item(id: 10, name: 'Item 10 (with tag)', tags: [tagBox.getAt(0) as Tag]);
     itemBox.add(item1);
     itemBox.add(item2);
     itemBox.add(item3);
@@ -51,6 +59,7 @@ void main() async {
     itemBox.add(item7);
     itemBox.add(item8);
     itemBox.add(item9);
+    itemBox.add(item10);
   }
 
   if(setupBox.isEmpty) {

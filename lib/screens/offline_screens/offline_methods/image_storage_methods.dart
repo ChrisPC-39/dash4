@@ -17,28 +17,18 @@ void showImageDialog({
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              IconButton(
-                onPressed: () => onDelete(),
-                icon: Icon(
-                  Icons.delete,
-                  color: Colors.red[400],
-                ),
+
+          Align(
+            alignment: Alignment.centerRight,
+            child: IconButton(
+              onPressed: () => onDelete(),
+              icon: Icon(
+                Icons.delete,
+                color: Colors.red[400],
               ),
-              IconButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                // child: const Text("Back"),
-                icon: Icon(
-                  Icons.close_fullscreen,
-                  color: Colors.grey[300],
-                ),
-              ),
-            ],
+            ),
           ),
+
           Expanded(
             child: InteractiveViewer(
               child: Padding(
@@ -46,6 +36,36 @@ void showImageDialog({
                 child: Image.memory(imageBytes),
               ),
             ),
+          ),
+
+          Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.grey[300], // Background color
+                      padding: const EdgeInsets.all(15),       // Padding around the text
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8), // Rounded corners
+                      ),
+                    ),
+                    child: const Text(
+                      "Close",
+                      style: TextStyle(
+                        // color: Colors.black,
+                        fontSize: 18,
+                        // fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       );
