@@ -1,13 +1,15 @@
 import 'dart:io';
 
 import 'package:dash4/globals.dart';
-import 'package:dash4/screens/oflline_screens/offline_screen.dart';
+import 'package:dash4/screens/oflline_screens/sub_screens/list_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 
 import 'database/item.dart';
+import 'database/setup.dart';
+import 'screens/oflline_screens/item_view_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,10 +24,13 @@ void main() async {
   }
 
   Hive.registerAdapter(ItemAdapter());
+  Hive.registerAdapter(SetupAdapter());
 
   await Hive.openBox(itemBoxName);
+  await Hive.openBox(setupBoxName);
 
   final itemBox = Hive.box(itemBoxName);
+  final setupBox = Hive.box(setupBoxName);
 
   if (itemBox.isEmpty) {
     final item1 = Item(id: 1, name: 'Item 1');
@@ -48,17 +53,14 @@ void main() async {
     itemBox.add(item9);
   }
 
+  if(setupBox.isEmpty) {
+    setupBox.add(Setup());
+  }
+
   runApp(MaterialApp(
     home: const MyApp(),
     debugShowCheckedModeBanner: false,
-    theme: ThemeData.light().copyWith(
-      cardColor: Colors.white,
-      buttonTheme: ButtonThemeData(
-        colorScheme: const ColorScheme.light().copyWith(
-          background: Colors.blue[400],
-        ),
-      ),
-    ),
+    theme: setupBox.getAt(0).isDarkTheme ? darkTheme : lightTheme,
   ));
 }
 
@@ -67,6 +69,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const OfflineScreen();
+    return ValueListenableBuilder(
+      valueListenable: Hive.box(setupBoxName).listenable(),
+      builder: (context, setupBox, _) {
+        final Setup setup = setupBox.getAt(0);
+
+        return ItemViewScreen(setup: setup);
+      }
+    );
   }
 }

@@ -1,50 +1,47 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'item.dart';
+part of 'setup.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class ItemAdapter extends TypeAdapter<Item> {
+class SetupAdapter extends TypeAdapter<Setup> {
   @override
-  final int typeId = 1;
+  final int typeId = 0;
 
   @override
-  Item read(BinaryReader reader) {
+  Setup read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Item(
-      name: fields[1] as String,
-      id: fields[0] as int,
-      isSection: fields[2] as bool,
-      isSelected: fields[3] as bool,
-      isEditing: fields[4] as bool,
-      isVisible: fields[5] as bool,
-      images: (fields[6] as List?)?.cast<Uint8List>(),
+    return Setup(
+      fontSize: fields[0] as double,
+      itemSize: fields[1] as double,
+      useEnter: fields[2] as bool,
+      isReverse: fields[3] as bool,
+      isDarkTheme: fields[4] as bool,
+      isListView: fields[5] as bool,
     );
   }
 
   @override
-  void write(BinaryWriter writer, Item obj) {
+  void write(BinaryWriter writer, Setup obj) {
     writer
-      ..writeByte(7)
-      ..writeByte(0)
-      ..write(obj.id)
-      ..writeByte(1)
-      ..write(obj.name)
-      ..writeByte(2)
-      ..write(obj.isSection)
-      ..writeByte(3)
-      ..write(obj.isSelected)
-      ..writeByte(4)
-      ..write(obj.isEditing)
-      ..writeByte(5)
-      ..write(obj.isVisible)
       ..writeByte(6)
-      ..write(obj.images);
+      ..writeByte(0)
+      ..write(obj.fontSize)
+      ..writeByte(1)
+      ..write(obj.itemSize)
+      ..writeByte(2)
+      ..write(obj.useEnter)
+      ..writeByte(3)
+      ..write(obj.isReverse)
+      ..writeByte(4)
+      ..write(obj.isDarkTheme)
+      ..writeByte(5)
+      ..write(obj.isListView);
   }
 
   @override
@@ -53,7 +50,7 @@ class ItemAdapter extends TypeAdapter<Item> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ItemAdapter &&
+      other is SetupAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
