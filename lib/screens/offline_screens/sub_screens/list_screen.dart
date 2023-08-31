@@ -7,6 +7,7 @@ import 'package:badges/badges.dart' as badges;
 
 import '../../../database/item.dart';
 import '../../../database/setup.dart';
+import '../../../database/tag.dart';
 import '../../../globals.dart';
 import '../offline_methods/image_storage_methods.dart';
 import '../offline_methods/list_methods.dart';
@@ -71,7 +72,7 @@ class _ListScreenState extends State<ListScreen> {
                     if (index == itemBox.length) {
                       return Container(
                         key: UniqueKey(),
-                        height: widget.hasCachedImages ? 225 : 125,
+                        height: widget.hasCachedImages ? 200 : 100,
                       );
                     }
 
@@ -125,164 +126,207 @@ class _ListScreenState extends State<ListScreen> {
   }
 
   Widget _buildItem(Item item, int index, Box box) {
-    return badges.Badge(
+    return Stack(
       key: ValueKey(item.id),
-      badgeContent: Container(),
-      position: badges.BadgePosition.topStart(top: 0, start: 5),
-      showBadge: hasImages(item.images) && setup.isListView,
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => ImageScreen(
-              index: index,
-            ),
+      children: [
+        badges.Badge(
+          badgeContent: Container(),
+          position: badges.BadgePosition.topStart(top: 0, start: 5),
+          showBadge: hasImages(item.images) && setup.isListView,
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => ImageScreen(
+                  index: index,
+                ),
+              ),
+            );
+          },
+          badgeStyle: const badges.BadgeStyle(
+            shape: badges.BadgeShape.circle,
+            badgeColor: Colors.grey,
+            padding: EdgeInsets.all(5),
           ),
-        );
-      },
-      badgeStyle: const badges.BadgeStyle(
-        shape: badges.BadgeShape.circle,
-        badgeColor: Colors.grey,
-        padding: EdgeInsets.all(5),
-      ),
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.0),
-        ),
-        child: ReorderableDelayedDragStartListener(
-          index: index,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 100),
-            decoration: BoxDecoration(
-              color: item.isSelected
-                  ? Color.lerp(itemColor, Colors.grey, 0.5)
-                  : itemColor,
-              borderRadius: BorderRadius.circular(10.0),
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  Visibility(
-                    visible: hasImages(item.images) && !setup.isListView,
-                    child: SizedBox(
-                      height: 50,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: hasImages(item.images)
-                            ? item.images!.length + 1
-                            : 0,
-                        itemBuilder: (context, imageIndex) {
-                          if (imageIndex == item.images!.length) {
-                            return SizedBox(
-                              height: 50,
-                              width: 50,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Stack(
-                                  children: [
-                                    Container(color: Colors.grey[200]),
-                                    const Center(
-                                        child: Icon(Icons.open_in_new)),
-                                    Positioned.fill(
-                                      child: Material(
-                                        color: Colors.transparent,
-                                        child: InkWell(
-                                          splashColor:
-                                              Colors.black.withOpacity(0.25),
-                                          onTap: () {
-                                            Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    ImageScreen(
-                                                  index: index,
-                                                ),
-                                              ),
-                                            );
-                                          },
+            child: ReorderableDelayedDragStartListener(
+              index: index,
+              child: AnimatedContainer(
+                height: setup.itemSize,
+                duration: const Duration(milliseconds: 100),
+                decoration: BoxDecoration(
+                  color: item.isSelected
+                      ? Color.lerp(itemColor, Colors.grey, 0.5)
+                      : itemColor,
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      Visibility(
+                        visible: hasImages(item.images) && !setup.isListView,
+                        child: SizedBox(
+                          height: 50,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: hasImages(item.images)
+                                ? item.images!.length + 1
+                                : 0,
+                            itemBuilder: (context, imageIndex) {
+                              if (imageIndex == item.images!.length) {
+                                return SizedBox(
+                                  height: 50,
+                                  width: 50,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Stack(
+                                      children: [
+                                        Container(color: Colors.grey[200]),
+                                        const Center(
+                                            child: Icon(Icons.open_in_new)),
+                                        Positioned.fill(
+                                          child: Material(
+                                            color: Colors.transparent,
+                                            child: InkWell(
+                                              splashColor: Colors.black
+                                                  .withOpacity(0.25),
+                                              onTap: () {
+                                                Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        ImageScreen(
+                                                      index: index,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              final image = item.images![imageIndex];
+
+                              return Row(
+                                children: [
+                                  Stack(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: Image.memory(image),
+                                      ),
+                                      Positioned.fill(
+                                        child: Material(
+                                          color: Colors.transparent,
+                                          child: InkWell(
+                                            splashColor:
+                                                Colors.black.withOpacity(0.25),
+                                            onTap: () {
+                                              showImageDialog(
+                                                context: context,
+                                                imageBytes: image,
+                                                onDelete: () {
+                                                  final List<Uint8List> images =
+                                                      item.images!;
+                                                  images.remove(image);
+
+                                                  updateItemImages(
+                                                    box: Hive.box(itemBoxName),
+                                                    index: index,
+                                                    images: images,
+                                                  );
+
+                                                  setState(() {});
+                                                  Navigator.of(context).pop();
+                                                },
+                                              );
+                                            },
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }
-
-                          final image = item.images![imageIndex];
-
-                          return Row(
-                            children: [
-                              Stack(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Image.memory(image),
+                                    ],
                                   ),
-                                  Positioned.fill(
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        splashColor:
-                                            Colors.black.withOpacity(0.25),
-                                        onTap: () {
-                                          showImageDialog(
-                                            context: context,
-                                            imageBytes: image,
-                                            onDelete: () {
-                                              final List<Uint8List> images =
-                                                  item.images!;
-                                              images.remove(image);
-
-                                              updateItemImages(
-                                                box: Hive.box(itemBoxName),
-                                                index: index,
-                                                images: images,
-                                              );
-
-                                              setState(() {});
-                                              Navigator.of(context).pop();
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ),
+                                  const SizedBox(width: 5),
                                 ],
-                              ),
-                              const SizedBox(width: 5),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _itemCheckboxCancelIcon(index, item, box),
-                      Flexible(
-                        child: GestureDetector(
-                          onTap: () {
-                            textEditingController.text = item.name;
-
-                            updateItemEditing(
-                              box: box,
-                              index: index,
-                              isEditing: true,
-                            );
-                          },
-                          child: _itemTextField(index, item, box),
+                              );
+                            },
+                          ),
                         ),
                       ),
-                      _itemDeleteCheckButton(index, item, box),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _itemCheckboxCancelIcon(index, item, box),
+                          Flexible(
+                            child: GestureDetector(
+                              onTap: () {
+                                textEditingController.text = item.name;
+
+                                updateItemEditing(
+                                  box: box,
+                                  index: index,
+                                  isEditing: true,
+                                );
+                              },
+                              child: _itemTextField(index, item, box),
+                            ),
+                          ),
+                          _itemDeleteCheckButton(index, item, box),
+                        ],
+                      ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
         ),
-      ),
+        Positioned(
+          top: widget.hasCachedImages
+              ? setup.itemSize - 2 + 100
+              : !setup.isListView
+                  ? setup.itemSize - 2
+                  : setup.itemSize - 12,
+          left: 25,
+          child: LayoutBuilder(builder: (context, constraints) {
+            return SizedBox(
+              height: !setup.isListView
+                  ? constraints.smallest.height + 10
+                  : constraints.smallest.height + 20,
+              child: ListView.builder(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.horizontal,
+                  itemCount: item.tags == null ? 0 : item.tags!.length,
+                  itemBuilder: (context, tagIndex) {
+                    final tag = item.tags![tagIndex];
+
+                    List<String> words = tag.label.split(' ');
+                    String initials = words.map((word) => word[0]).join();
+
+                    return badges.Badge(
+                      badgeStyle: badges.BadgeStyle(
+                        shape: badges.BadgeShape.circle,
+                        badgeColor: Color(tag.color),
+                        padding: const EdgeInsets.all(5),
+                      ),
+                      badgeContent: setup.isListView
+                          ? Text(initials,
+                              style: const TextStyle(color: Colors.white))
+                          : const Text(""),
+                      onTap: () {},
+                    );
+                  }),
+            );
+          }),
+        ),
+      ],
     );
   }
 

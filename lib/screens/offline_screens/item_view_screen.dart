@@ -1,15 +1,10 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:another_flushbar/flushbar.dart';
 import 'package:dash4/globals.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:badges/badges.dart' as badges;
 
 import '../../database/item.dart';
@@ -31,7 +26,16 @@ class ItemViewScreen extends StatefulWidget {
 class _ItemViewScreenState extends State<ItemViewScreen> {
   TextEditingController searchBarController = TextEditingController();
   List<Uint8List>? cachedImages = [];
-  bool isSelected = false;
+  List<bool> isSelected = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    for (int i = 0; i < Hive.box(tagBoxName).length; i++) {
+      isSelected.add(false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -120,38 +124,40 @@ class _ItemViewScreenState extends State<ItemViewScreen> {
                     ),
                   ),
                 ),
-                Flexible(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.keyboard_arrow_right),
-                        onPressed: () {},
-                      ),
-                      Expanded(
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: Hive.box(tagBoxName).length,
-                          itemBuilder: (buildContext, tagIndex) {
-                            final tag =
-                                Hive.box(tagBoxName).getAt(tagIndex) as Tag;
-
-                            return ChoiceChip(
-                              label: Text(tag.label),
-                              selected: isSelected,
-                              onSelected: (newVal) {
-                                isSelected = newVal;
-                                setState(() {});
-                              },
-                              backgroundColor: Colors.grey[300],
-                              selectedColor: Color(tag.color),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                //TAGS (unused - bad UI)
+                // SizedBox(
+                //   width: double.infinity,
+                //   height: 40,
+                //   child: Row(
+                //     crossAxisAlignment: CrossAxisAlignment.end,
+                //     children: [
+                //       IconButton(
+                //         icon: const Icon(Icons.keyboard_arrow_right),
+                //         onPressed: () {},
+                //       ),
+                //       ListView.builder(
+                //         shrinkWrap: true,
+                //         scrollDirection: Axis.horizontal,
+                //         itemCount: Hive.box(tagBoxName).length,
+                //         itemBuilder: (buildContext, tagIndex) {
+                //           final tag =
+                //               Hive.box(tagBoxName).getAt(tagIndex) as Tag;
+                //
+                //           return ChoiceChip(
+                //             label: Text(tag.label),
+                //             selected: isSelected[tagIndex],
+                //             onSelected: (newVal) {
+                //               isSelected[tagIndex] = newVal;
+                //               setState(() {});
+                //             },
+                //             backgroundColor: Colors.grey[300],
+                //             selectedColor: Color(tag.color),
+                //           );
+                //         },
+                //       ),
+                //     ],
+                //   ),
+                // ),
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(4.0),
@@ -159,6 +165,16 @@ class _ItemViewScreenState extends State<ItemViewScreen> {
                       children: [
                         PopupMenuButton(
                           itemBuilder: (context) => [
+                            PopupMenuItem(
+                              value: 2,
+                              child: Row(
+                                children: const [
+                                  Icon(Icons.new_label),
+                                  SizedBox(width: 5),
+                                  Text("Add tags"),
+                                ],
+                              ),
+                            ),
                             PopupMenuItem(
                               value: 0,
                               child: Row(
@@ -198,6 +214,9 @@ class _ItemViewScreenState extends State<ItemViewScreen> {
                                     Navigator.pop(context);
                                   },
                                 );
+                                break;
+                              case 2:
+                                selectTagDialog();
                                 break;
                               default:
                                 break;
@@ -283,6 +302,65 @@ class _ItemViewScreenState extends State<ItemViewScreen> {
           )
         ],
       ),
+    );
+  }
+
+  void selectTagDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return LayoutBuilder(builder: (context, constraints) {
+          return StatefulBuilder(builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Choose tags"),
+              content: SizedBox(
+                width: constraints.maxWidth * .9,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: Hive.box(tagBoxName).length,
+                  itemBuilder: (buildContext, tagIndex) {
+                    final tag = Hive.box(tagBoxName).getAt(tagIndex) as Tag;
+
+                    List<String> words = tag.label.split(' ');
+                    String initials = words.map((word) => word[0]).join();
+
+                    return CheckboxListTile(
+                      value: isSelected[tagIndex],
+                      activeColor: Color(tag.color),
+                      title: Row(
+                        children: [
+                          Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: Color(tag.color),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                                child: Text(
+                              initials,
+                              style: const TextStyle(
+                                color: Colors.white,
+                              ),
+                            )),
+                          ),
+                          const SizedBox(width: 15),
+                          Text(tag.label),
+                        ],
+                      ),
+                      onChanged: (newVal) {
+                        setState(() {
+                          isSelected[tagIndex] = newVal!;
+                        });
+                      },
+                    );
+                  },
+                ),
+              ),
+            );
+          });
+        });
+      },
     );
   }
 
