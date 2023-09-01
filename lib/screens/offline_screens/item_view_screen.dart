@@ -1,16 +1,18 @@
 import 'dart:typed_data';
 
 import 'package:another_flushbar/flushbar.dart';
-import 'package:dash4/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:badges/badges.dart' as badges;
 
 import '../../database/item.dart';
 import '../../database/setup.dart';
 import '../../database/tag.dart';
+import '../../globals.dart';
+import '../../widgets/search_bar.dart';
+import 'all_tag_view_screen.dart';
 import 'offline_methods/image_storage_methods.dart';
+import 'offline_methods/item_methods.dart';
 import 'offline_methods/list_methods.dart';
 import 'sub_screens/list_screen.dart';
 
@@ -59,6 +61,16 @@ class _ItemViewScreenState extends State<ItemViewScreen> {
                   toggleListView();
                 }),
               ),
+              IconButton(
+                icon: const Icon(Icons.label),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AllTagViewScreen(),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -70,6 +82,7 @@ class _ItemViewScreenState extends State<ItemViewScreen> {
             child: ListScreen(
               searchBar: searchBarController,
               hasCachedImages: cachedImages!.isNotEmpty,
+              hasCachedTags: isSelected.contains(true),
             ),
           ),
           Padding(
@@ -77,6 +90,38 @@ class _ItemViewScreenState extends State<ItemViewScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
+                SizedBox(
+                  width: double.infinity,
+                  height: 40,
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    scrollDirection: Axis.horizontal,
+                    itemCount: Hive.box(tagBoxName).length,
+                    itemBuilder: (buildContext, tagIndex) {
+                      final tag = Hive.box(tagBoxName).getAt(tagIndex) as Tag;
+
+                      return Visibility(
+                        visible: isSelected[tagIndex],
+                        child: RawChip(
+                          showCheckmark: false,
+                          label: Text(
+                            tag.label,
+                            style: const TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                          selected: isSelected[tagIndex],
+                          onSelected: (newVal) {
+                            isSelected[tagIndex] = newVal;
+                            setState(() {});
+                          },
+                          backgroundColor: Colors.grey[300],
+                          selectedColor: Color(tag.color),
+                        ),
+                      );
+                    },
+                  ),
+                ),
                 Visibility(
                   visible: hasImages(cachedImages),
                   child: SizedBox(
@@ -124,178 +169,34 @@ class _ItemViewScreenState extends State<ItemViewScreen> {
                     ),
                   ),
                 ),
-                //TAGS (unused - bad UI)
-                // SizedBox(
-                //   width: double.infinity,
-                //   height: 40,
-                //   child: Row(
-                //     crossAxisAlignment: CrossAxisAlignment.end,
-                //     children: [
-                //       IconButton(
-                //         icon: const Icon(Icons.keyboard_arrow_right),
-                //         onPressed: () {},
-                //       ),
-                //       ListView.builder(
-                //         shrinkWrap: true,
-                //         scrollDirection: Axis.horizontal,
-                //         itemCount: Hive.box(tagBoxName).length,
-                //         itemBuilder: (buildContext, tagIndex) {
-                //           final tag =
-                //               Hive.box(tagBoxName).getAt(tagIndex) as Tag;
-                //
-                //           return ChoiceChip(
-                //             label: Text(tag.label),
-                //             selected: isSelected[tagIndex],
-                //             onSelected: (newVal) {
-                //               isSelected[tagIndex] = newVal;
-                //               setState(() {});
-                //             },
-                //             backgroundColor: Colors.grey[300],
-                //             selectedColor: Color(tag.color),
-                //           );
-                //         },
-                //       ),
-                //     ],
-                //   ),
-                // ),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: Row(
-                      children: [
-                        PopupMenuButton(
-                          itemBuilder: (context) => [
-                            PopupMenuItem(
-                              value: 2,
-                              child: Row(
-                                children: const [
-                                  Icon(Icons.new_label),
-                                  SizedBox(width: 5),
-                                  Text("Add tags"),
-                                ],
-                              ),
-                            ),
-                            PopupMenuItem(
-                              value: 0,
-                              child: Row(
-                                children: const [
-                                  Icon(Icons.folder_open),
-                                  SizedBox(width: 5),
-                                  Text("Add section"),
-                                ],
-                              ),
-                            ),
-                            PopupMenuItem(
-                              value: 1,
-                              child: Row(
-                                children: const [
-                                  Icon(Icons.upload),
-                                  SizedBox(width: 5),
-                                  Text("Upload photos"),
-                                ],
-                              ),
-                            ),
-                          ],
-                          onSelected: (val) {
-                            switch (val) {
-                              case 0:
-                                addSectionToBox(searchBarController, context);
-                                break;
-                              case 1:
-                                uploadFileDialog(
-                                  context: context,
-                                  galleryPress: () => pickImageFromGallery(),
-                                  cameraPress: () => pickImageFromCamera(),
-                                  onCancel: () {
-                                    setState(() {
-                                      cachedImages = [];
-                                    });
+                SearchBar(
+                  leading: _buildSearchBarLeading(),
+                  controller: searchBarController,
+                  hintText: "Search or add an item...",
+                  onChangedCallback: (String newVal) {},
+                  onSendCallback: () => setState(() {
+                    //Validate input
+                    if (!validateInputEmpty(
+                        context: context, input: searchBarController.text)) {
+                      return;
+                    }
 
-                                    Navigator.pop(context);
-                                  },
-                                );
-                                break;
-                              case 2:
-                                selectTagDialog();
-                                break;
-                              default:
-                                break;
-                            }
-                          },
-                        ),
-                        Expanded(
-                          child: Card(
-                            elevation: 0,
-                            color: Colors.grey[100],
-                            child: TextField(
-                              controller: searchBarController,
-                              onChanged: (newVal) => setState(() {}),
-                              decoration: InputDecoration(
-                                hintText: "Search or add an item...",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        ElevatedButton(
-                          onPressed: () => setState(() {
-                            if (searchBarController.text.isEmpty) {
-                              Flushbar(
-                                flushbarPosition: FlushbarPosition.TOP,
-                                title: "Field is empty",
-                                message: "Please input something...",
-                                duration: const Duration(seconds: 3),
-                                margin: const EdgeInsets.all(8),
-                                borderRadius: BorderRadius.circular(8),
-                              ).show(context);
+                    //Check tags and add the item with tags
+                    addNewItemWithTags(
+                      isSelected: isSelected,
+                      controller: searchBarController,
+                      context: context,
+                      updateSelectedList: (int index) => setState(() {
+                        isSelected[index] = false;
+                      }),
+                    );
 
-                              return;
-                            }
-
-                            addItemToBox(searchBarController, context);
-
-                            if (!hasImages(cachedImages)) {
-                              return;
-                            }
-
-                            for (var element in cachedImages!) {
-                              storeImage(element, 0);
-                            }
-
-                            cachedImages = [];
-                          }),
-                          style: ButtonStyle(
-                            elevation: MaterialStateProperty.all(0),
-                            backgroundColor: MaterialStateProperty.all(
-                                // Theme.of(context).buttonTheme.colorScheme!.background,
-                                Colors.transparent),
-                            fixedSize: MaterialStateProperty.all(
-                              const Size(55, 55),
-                            ),
-                            shape: MaterialStateProperty.all(
-                              RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                            ),
-                          ),
-                          child: Icon(
-                            Icons.send,
-                            color: Theme.of(context)
-                                .buttonTheme
-                                .colorScheme!
-                                .background,
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
+                    //Store images and clear cache
+                    addImagesToNewItem(
+                      cachedImages: cachedImages,
+                      clearCacheCallback: () => cachedImages = [],
+                    );
+                  }),
                 ),
               ],
             ),
@@ -305,61 +206,76 @@ class _ItemViewScreenState extends State<ItemViewScreen> {
     );
   }
 
-  void selectTagDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return LayoutBuilder(builder: (context, constraints) {
-          return StatefulBuilder(builder: (context, setState) {
-            return AlertDialog(
-              title: const Text("Choose tags"),
-              content: SizedBox(
-                width: constraints.maxWidth * .9,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: Hive.box(tagBoxName).length,
-                  itemBuilder: (buildContext, tagIndex) {
-                    final tag = Hive.box(tagBoxName).getAt(tagIndex) as Tag;
+  Widget _buildSearchBarLeading() {
+    return PopupMenuButton(
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: 2,
+          child: Row(
+            children: const [
+              Icon(Icons.new_label),
+              SizedBox(width: 5),
+              Text("Add tags"),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 0,
+          child: Row(
+            children: const [
+              Icon(Icons.folder_open),
+              SizedBox(width: 5),
+              Text("Add section"),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 1,
+          child: Row(
+            children: const [
+              Icon(Icons.upload),
+              SizedBox(width: 5),
+              Text("Upload photos"),
+            ],
+          ),
+        ),
+      ],
+      onSelected: (val) {
+        switch (val) {
+          case 0:
+            addSectionToBox(searchBarController, context);
+            break;
+          case 1:
+            uploadFileDialog(
+              context: context,
+              galleryPress: () => pickImageFromGallery(),
+              cameraPress: () => pickImageFromCamera(),
+              onCancel: () {
+                setState(() {
+                  cachedImages = [];
+                });
 
-                    List<String> words = tag.label.split(' ');
-                    String initials = words.map((word) => word[0]).join();
-
-                    return CheckboxListTile(
-                      value: isSelected[tagIndex],
-                      activeColor: Color(tag.color),
-                      title: Row(
-                        children: [
-                          Container(
-                            width: 30,
-                            height: 30,
-                            decoration: BoxDecoration(
-                              color: Color(tag.color),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                                child: Text(
-                              initials,
-                              style: const TextStyle(
-                                color: Colors.white,
-                              ),
-                            )),
-                          ),
-                          const SizedBox(width: 15),
-                          Text(tag.label),
-                        ],
-                      ),
-                      onChanged: (newVal) {
-                        setState(() {
-                          isSelected[tagIndex] = newVal!;
-                        });
-                      },
-                    );
-                  },
-                ),
-              ),
+                Navigator.pop(context);
+              },
             );
-          });
-        });
+            break;
+          case 2:
+            void updateSelected(List<bool> updatedList) {
+              setState(() {
+                isSelected = updatedList;
+              });
+            }
+
+            selectTagDialog(
+              context,
+              isSelected,
+              updateSelected,
+              () {},
+            );
+            break;
+          default:
+            break;
+        }
       },
     );
   }

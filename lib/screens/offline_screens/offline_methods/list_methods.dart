@@ -2,12 +2,11 @@ import 'dart:ffi';
 
 import 'package:another_flushbar/flushbar.dart';
 import 'package:dash4/globals.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../../database/item.dart';
+import '../../../database/tag.dart';
 
 void printListOfItems(List itemList) {
   for (int i = 0; i < itemList.length; i++) {
@@ -18,24 +17,10 @@ void printListOfItems(List itemList) {
   print("-----------");
 }
 
-Future<void> addItemToBox(
-  TextEditingController searchBar,
-  BuildContext context,
-) async {
+void deleteItemFromBox(int index) {
   final box = Hive.box(itemBoxName);
-  List boxAsList = box.values.toList();
-  box.add(Item(name: 'null', id: -1));
 
-  boxAsList.insert(
-    0,
-    Item(
-      name: searchBar.text,
-      id: box.length + 1,
-    ),
-  );
-
-  replaceBoxWithList(box, boxAsList);
-  searchBar.clear();
+  box.deleteAt(index);
 }
 
 void addSectionToBox(TextEditingController searchBar, BuildContext context) {

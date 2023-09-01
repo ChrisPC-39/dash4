@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:dash4/screens/offline_screens/sub_screens/item_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -7,7 +8,6 @@ import 'package:badges/badges.dart' as badges;
 
 import '../../../database/item.dart';
 import '../../../database/setup.dart';
-import '../../../database/tag.dart';
 import '../../../globals.dart';
 import '../offline_methods/image_storage_methods.dart';
 import '../offline_methods/list_methods.dart';
@@ -17,11 +17,13 @@ import 'image_screen.dart';
 class ListScreen extends StatefulWidget {
   final TextEditingController searchBar;
   final bool hasCachedImages;
+  final bool hasCachedTags;
 
   const ListScreen({
     super.key,
     required this.searchBar,
     required this.hasCachedImages,
+    required this.hasCachedTags,
   });
 
   @override
@@ -72,7 +74,13 @@ class _ListScreenState extends State<ListScreen> {
                     if (index == itemBox.length) {
                       return Container(
                         key: UniqueKey(),
-                        height: widget.hasCachedImages ? 200 : 100,
+                        height: widget.hasCachedImages
+                            ? widget.hasCachedTags
+                                ? 235
+                                : 200
+                            : widget.hasCachedTags
+                                ? 135
+                                : 100,
                       );
                     }
 
@@ -154,7 +162,6 @@ class _ListScreenState extends State<ListScreen> {
             child: ReorderableDelayedDragStartListener(
               index: index,
               child: AnimatedContainer(
-                height: setup.itemSize,
                 duration: const Duration(milliseconds: 100),
                 decoration: BoxDecoration(
                   color: item.isSelected
@@ -289,40 +296,53 @@ class _ListScreenState extends State<ListScreen> {
           ),
         ),
         Positioned(
-          top: widget.hasCachedImages
-              ? setup.itemSize - 2 + 100
-              : !setup.isListView
-                  ? setup.itemSize - 2
+          top: hasImages(item.images)
+              ? setup.isListView
+                  ? setup.itemSize - 3
+                  : setup.itemSize + 37.5
+              : setup.isListView
+                  ? setup.itemSize - 3
                   : setup.itemSize - 12,
           left: 25,
           child: LayoutBuilder(builder: (context, constraints) {
             return SizedBox(
-              height: !setup.isListView
+              height: setup.isListView
                   ? constraints.smallest.height + 10
                   : constraints.smallest.height + 20,
               child: ListView.builder(
-                  shrinkWrap: true,
-                  scrollDirection: Axis.horizontal,
-                  itemCount: item.tags == null ? 0 : item.tags!.length,
-                  itemBuilder: (context, tagIndex) {
-                    final tag = item.tags![tagIndex];
+                shrinkWrap: true,
+                scrollDirection: Axis.horizontal,
+                itemCount: item.tags == null ? 0 : item.tags!.length,
+                itemBuilder: (context, tagIndex) {
+                  final tag = item.tags![tagIndex];
+                  final tagColor = item.tagColors![tagIndex];
 
-                    List<String> words = tag.label.split(' ');
-                    String initials = words.map((word) => word[0]).join();
+                  List<String> words = tag.split(' ');
+                  String initials = words.map((word) => word[0]).join();
 
-                    return badges.Badge(
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 5),
+                    child: badges.Badge(
                       badgeStyle: badges.BadgeStyle(
                         shape: badges.BadgeShape.circle,
-                        badgeColor: Color(tag.color),
+                        badgeColor: Color(tagColor),
                         padding: const EdgeInsets.all(5),
                       ),
-                      badgeContent: setup.isListView
+                      badgeContent: !setup.isListView
                           ? Text(initials,
                               style: const TextStyle(color: Colors.white))
                           : const Text(""),
-                      onTap: () {},
-                    );
-                  }),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => ItemDetailsScreen(index: index),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
             );
           }),
         ),
@@ -510,11 +530,57 @@ class _ListScreenState extends State<ListScreen> {
             },
             icon: Icon(Icons.check, size: setup.fontSize + 7),
           )
-        : IconButton(
-            onPressed: () {
-              box.deleteAt(index);
-            },
-            icon: Icon(Icons.delete_outline, size: setup.fontSize + 7),
+        : Transform.scale(
+            scale: setup.fontSize / 20,
+            child: PopupMenuButton(
+              onSelected: (value) {
+                switch (value) {
+                  case "delete":
+                    deleteItemFromBox(index);
+                    break;
+                  case "openDetails":
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => ItemDetailsScreen(index: index),
+                      ),
+                    );
+                    break;
+                  default:
+                    break;
+                }
+              },
+              itemBuilder: (BuildContext context) {
+                return [
+                  PopupMenuItem(
+                    value: 'openDetails',
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Open details'),
+                        Icon(
+                          Icons.open_in_new,
+                          size: 22,
+                          color: Theme.of(context)
+                              .buttonTheme
+                              .colorScheme!
+                              .background,
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Delete'),
+                        Icon(Icons.delete_outline, color: Colors.red[400]),
+                      ],
+                    ),
+                  ),
+                ];
+              },
+            ),
           );
   }
 

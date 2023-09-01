@@ -2,9 +2,11 @@
 
 import 'package:dash4/database/tag.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 import '../globals.dart';
+import '../screens/offline_screens/offline_methods/list_methods.dart';
 
 part 'item.g.dart';
 
@@ -32,7 +34,13 @@ class Item {
   final List<Uint8List>? images;
 
   @HiveField(7)
-  final List<Tag>? tags;
+  final List<String>? tags;
+
+  @HiveField(8)
+  final List<int>? tagColors;
+
+  @HiveField(9)
+  final String details;
 
   Item({
     required this.name,
@@ -41,8 +49,10 @@ class Item {
     this.isSelected = false,
     this.isEditing = false,
     this.isVisible = true,
+    this.details = "",
     this.images,
     this.tags,
+    this.tagColors,
   });
 }
 
@@ -76,6 +86,30 @@ Future<List<Uint8List>> getImages() async {
   return result!.cast<Uint8List>();
 }
 
+Future<void> addItemToBox(
+    TextEditingController searchBar,
+    List<String> tagLabels,
+    List<int> tagColors,
+    BuildContext context,
+    ) async {
+  final box = Hive.box(itemBoxName);
+  List boxAsList = box.values.toList();
+  box.add(Item(name: 'null', id: -1));
+
+  boxAsList.insert(
+    0,
+    Item(
+      name: searchBar.text,
+      tags: tagLabels,
+      tagColors: tagColors,
+      id: box.length + 1,
+    ),
+  );
+
+  replaceBoxWithList(box, boxAsList);
+  searchBar.clear();
+}
+
 void updateItemName({
   required Box box,
   required int index,
@@ -92,6 +126,9 @@ void updateItemName({
       isEditing: item.isEditing,
       isVisible: item.isVisible,
       images: item.images,
+      tags: item.tags,
+      tagColors: item.tagColors,
+      details: item.details,
       name: newTitle,
     ),
   );
@@ -113,6 +150,9 @@ void updateItemSelected({
       isEditing: item.isEditing,
       isVisible: item.isVisible,
       images: item.images,
+      tags: item.tags,
+      tagColors: item.tagColors,
+      details: item.details,
       isSelected: isSelected,
     ),
   );
@@ -136,6 +176,9 @@ void updateItemEditing({
       isSelected: item.isSelected,
       isVisible: item.isVisible,
       images: item.images,
+      tags: item.tags,
+      tagColors: item.tagColors,
+      details: item.details,
       isEditing: isEditing,
     ),
   );
@@ -154,6 +197,9 @@ void disableAllEditItems(Box box) {
         isSelected: item.isSelected,
         isVisible: item.isVisible,
         images: item.images,
+        tags: item.tags,
+        tagColors: item.tagColors,
+        details: item.details,
         isEditing: false,
       ),
     );
@@ -176,6 +222,9 @@ void updateItemVisibility({
       isSelected: item.isSelected,
       isEditing: item.isEditing,
       images: item.images,
+      tags: item.tags,
+      tagColors: item.tagColors,
+      details: item.details,
       isVisible: isVisible,
     ),
   );
@@ -197,7 +246,100 @@ void updateItemImages({
       isSelected: item.isSelected,
       isEditing: item.isEditing,
       isVisible: item.isVisible,
+      tags: item.tags,
+      tagColors: item.tagColors,
+      details: item.details,
       images: images,
+    ),
+  );
+}
+
+void updateItemDetails({
+  required Box box,
+  required int index,
+  required String newDetails,
+}) {
+  final item = box.getAt(index) as Item;
+
+  box.putAt(
+    index,
+    Item(
+      id: item.id,
+      name: item.name,
+      isSection: item.isSection,
+      isSelected: item.isSelected,
+      isEditing: item.isEditing,
+      isVisible: item.isVisible,
+      tags: item.tags,
+      tagColors: item.tagColors,
+      images: item.images,
+      details: newDetails,
+    ),
+  );
+}
+
+void removeItemTag({
+  required Box box,
+  required int index,
+  required String tagToRemove,
+  required int tagColorToRemove,
+}) {
+  final item = box.getAt(index) as Item;
+
+  List<String> newTags = item.tags!;
+  List<int> newTagColors = item.tagColors!;
+
+  newTags.removeWhere((element) => element == tagToRemove);
+  newTagColors.removeWhere((element) => element == tagColorToRemove);
+
+  box.putAt(
+    index,
+    Item(
+      id: item.id,
+      name: item.name,
+      isSection: item.isSection,
+      isSelected: item.isSelected,
+      isEditing: item.isEditing,
+      isVisible: item.isVisible,
+      images: item.images,
+      details: item.details,
+      tags: newTags,
+      tagColors: newTagColors,
+    ),
+  );
+}
+
+void addItemTag({
+  required Box box,
+  required int index,
+  required String tagToAdd,
+  required int tagColorToAdd,
+}) {
+  final item = box.getAt(index) as Item;
+
+  List<String> newTags = item.tags == null ? [] : item.tags!;
+  List<int> newTagColors = item.tagColors == null ? [] : item.tagColors!;
+
+  if(newTags.contains(tagToAdd)) {
+    return;
+  }
+
+  newTags.add(tagToAdd);
+  newTagColors.add(tagColorToAdd);
+
+  box.putAt(
+    index,
+    Item(
+      id: item.id,
+      name: item.name,
+      isSection: item.isSection,
+      isSelected: item.isSelected,
+      isEditing: item.isEditing,
+      isVisible: item.isVisible,
+      images: item.images,
+      details: item.details,
+      tags: newTags,
+      tagColors: newTagColors,
     ),
   );
 }

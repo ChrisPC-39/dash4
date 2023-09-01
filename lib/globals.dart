@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-const String itemBoxName = "itemBoxName${54}";
+const String itemBoxName = "itemBoxName${58}";
 const String setupBoxName = "setupBoxName${3}";
-const String tagBoxName = "tagBoxName${0}";
+const String tagBoxName = "tagBoxName${1}";
 
 ThemeData lightTheme = ThemeData.light().copyWith(
   useMaterial3: true,

@@ -35,8 +35,10 @@ void main() async {
   final setupBox = Hive.box(setupBoxName);
   final tagBox = Hive.box(tagBoxName);
 
+  final Tag exampleTag = Tag(label: "Tag 1", color: Colors.purple.value);
+
   if(tagBox.isEmpty) {
-    tagBox.add(Tag(label: "Tag 1", color: Colors.green.value));
+    tagBox.add(exampleTag);
   }
 
   if (itemBox.isEmpty) {
@@ -49,7 +51,7 @@ void main() async {
     final item7 = Item(id: 7, name: 'Item 7', isSection: true);
     final item8 = Item(id: 8, name: 'Item 8');
     final item9 = Item(id: 9, name: 'Item 9');
-    final item10 = Item(id: 10, name: 'Item 10 (with tag)', tags: [tagBox.getAt(0) as Tag]);
+    final item10 = Item(id: 10, name: 'Item 10 (with tag)', tags: [exampleTag.label], tagColors: [exampleTag.color]);
     itemBox.add(item1);
     itemBox.add(item2);
     itemBox.add(item3);
