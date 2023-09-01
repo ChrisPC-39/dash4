@@ -9,7 +9,7 @@ import 'package:path_provider/path_provider.dart' as path_provider;
 
 import 'database/item.dart';
 import 'database/setup.dart';
-import 'screens/offline_screens/item_view_screen.dart';
+import 'screens/offline_screens/offline_main_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -85,7 +85,7 @@ class MyApp extends StatelessWidget {
       builder: (context, setupBox, _) {
         final Setup setup = setupBox.getAt(0);
 
-        return ItemViewScreen(setup: setup);
+        return OfflineMainScreen(setup: setup);
       }
     );
   }

@@ -1,11 +1,9 @@
 import 'dart:typed_data';
 
-import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../database/item.dart';
 import '../../database/setup.dart';
 import '../../database/tag.dart';
 import '../../globals.dart';
@@ -16,16 +14,16 @@ import 'offline_methods/item_methods.dart';
 import 'offline_methods/list_methods.dart';
 import 'sub_screens/list_screen.dart';
 
-class ItemViewScreen extends StatefulWidget {
+class OfflineMainScreen extends StatefulWidget {
   final Setup setup;
 
-  const ItemViewScreen({super.key, required this.setup});
+  const OfflineMainScreen({super.key, required this.setup});
 
   @override
-  State<ItemViewScreen> createState() => _ItemViewScreenState();
+  State<OfflineMainScreen> createState() => _OfflineMainScreenState();
 }
 
-class _ItemViewScreenState extends State<ItemViewScreen> {
+class _OfflineMainScreenState extends State<OfflineMainScreen> {
   TextEditingController searchBarController = TextEditingController();
   List<Uint8List>? cachedImages = [];
   List<bool> isSelected = [];
