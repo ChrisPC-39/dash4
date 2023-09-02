@@ -297,12 +297,18 @@ void removeItemTag({
 
   newTags.removeWhere((element) => element == tagToRemove);
 
-  for (int i = 0; i < newTagColors.length; i++) {
-    if (newTagColors[i] == tagColorToRemove) {
+  //The tag index corresponds to the tagColor index, so they should
+  //be removed at the same time.
+  //Also important to note that colors are not unique
+  for(int i = 0; i < newTags.length; i++) {
+    if(newTags[i] == tagToRemove) {
+      newTags.removeAt(i);
       newTagColors.removeAt(i);
       break;
     }
   }
+
+
 
   box.putAt(
     index,

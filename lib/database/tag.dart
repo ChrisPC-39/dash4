@@ -9,6 +9,7 @@ part 'tag.g.dart';
 
 @HiveType(typeId: 2)
 class Tag {
+  //UNIQUE FIELD
   @HiveField(0)
   final String label;
 
