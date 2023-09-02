@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../database/setup.dart';
@@ -28,14 +29,14 @@ class _OfflineMainScreenState extends State<OfflineMainScreen> {
   List<Uint8List>? cachedImages = [];
   List<bool> isSelected = [];
 
-  @override
-  void initState() {
-    super.initState();
-
-    for (int i = 0; i < Hive.box(tagBoxName).length; i++) {
-      isSelected.add(false);
-    }
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //
+  //   for (int i = 0; i < Hive.box(tagBoxName).length; i++) {
+  //     isSelected.add(false);
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -45,32 +46,41 @@ class _OfflineMainScreenState extends State<OfflineMainScreen> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         flexibleSpace: Padding(
           padding: const EdgeInsets.fromLTRB(8, 40, 8, 8),
-          child: Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.settings_sharp),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: widget.setup.isListView
-                    ? const Icon(Icons.view_list)
-                    : const Icon(Icons.grid_view_sharp),
-                onPressed: () => setState(() {
-                  toggleListView();
-                }),
-              ),
-              IconButton(
-                icon: const Icon(Icons.label),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const AllTagViewScreen(),
+          child: ValueListenableBuilder(
+              valueListenable: Hive.box(tagBoxName).listenable(),
+              builder: (context, tagBox, _) {
+
+                for (int i = 0; i < Hive.box(tagBoxName).length; i++) {
+                  isSelected.add(false);
+                }
+
+                return Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.settings_sharp),
+                      onPressed: () {},
                     ),
-                  );
-                },
-              ),
-            ],
-          ),
+                    IconButton(
+                      icon: widget.setup.isListView
+                          ? const Icon(Icons.view_list)
+                          : const Icon(Icons.grid_view_sharp),
+                      onPressed: () => setState(() {
+                        toggleListView();
+                      }),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.label),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const AllTagViewScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                );
+              }),
         ),
       ),
       body: Stack(
@@ -99,7 +109,7 @@ class _OfflineMainScreenState extends State<OfflineMainScreen> {
                       final tag = Hive.box(tagBoxName).getAt(tagIndex) as Tag;
 
                       return Visibility(
-                        visible: isSelected[tagIndex],
+                        visible: searchBarController.text.isNotEmpty,
                         child: RawChip(
                           showCheckmark: false,
                           label: Text(
@@ -110,10 +120,11 @@ class _OfflineMainScreenState extends State<OfflineMainScreen> {
                           ),
                           selected: isSelected[tagIndex],
                           onSelected: (newVal) {
-                            isSelected[tagIndex] = newVal;
-                            setState(() {});
+                            setState(() {
+                              isSelected[tagIndex] = newVal;
+                            });
                           },
-                          backgroundColor: Colors.grey[300],
+                          backgroundColor: Colors.grey[500],
                           selectedColor: Color(tag.color),
                         ),
                       );
@@ -171,7 +182,9 @@ class _OfflineMainScreenState extends State<OfflineMainScreen> {
                   leading: _buildSearchBarLeading(),
                   controller: searchBarController,
                   hintText: "Search or add an item...",
-                  onChangedCallback: (String newVal) {},
+                  onChangedCallback: (String newVal) {
+                    setState(() {});
+                  },
                   onSendCallback: () => setState(() {
                     //Validate input
                     if (!validateInputEmpty(

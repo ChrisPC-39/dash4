@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -9,22 +8,62 @@ import '../../../database/tag.dart';
 import '../../../globals.dart';
 import 'image_storage_methods.dart';
 
+bool hasTags(Item item) {
+  return item.tags != null && item.tags!.isNotEmpty;
+}
+
 bool validateInputEmpty(
     {required BuildContext context,
     required String input,
     String title = "Field is empty",
     String message = "Please input something..."}) {
   if (input.isEmpty) {
-    showFlushbar(
-      context,
-      title: "Field is empty",
-      message: "Please input something...",
-    );
+    showFlushbar(context, title: title, message: message);
 
     return false;
   }
 
   return true;
+}
+
+void commitItemEditChanges({
+  required Box box,
+  required int index,
+  required BuildContext context,
+  required String newName,
+}) {
+  updateItemEditing(
+    box: box,
+    index: index,
+    isEditing: false,
+  );
+
+  updateItemName(
+    box: box,
+    index: index,
+    context: context,
+    newName: newName,
+  );
+}
+
+void commitTagEditChanges({
+  required Box box,
+  required int index,
+  required BuildContext context,
+  required String newLabel,
+}) {
+  updateTagEditing(
+    box: box,
+    index: index,
+    isEditing: false,
+  );
+
+  updateTagLabel(
+    box: box,
+    index: index,
+    newLabel: newLabel,
+    context: context,
+  );
 }
 
 void addNewItemWithTags({
@@ -69,21 +108,6 @@ void addImagesToNewItem({
   }
 
   clearCacheCallback();
-}
-
-void showFlushbar(
-  BuildContext context, {
-  required String title,
-  required String message,
-}) {
-  Flushbar(
-    flushbarPosition: FlushbarPosition.TOP,
-    title: title,
-    message: message,
-    duration: const Duration(seconds: 3),
-    margin: const EdgeInsets.all(8),
-    borderRadius: BorderRadius.circular(8),
-  ).show(context);
 }
 
 void selectTagDialog(

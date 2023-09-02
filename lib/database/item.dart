@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 import '../globals.dart';
+import '../screens/offline_screens/offline_methods/item_methods.dart';
 import '../screens/offline_screens/offline_methods/list_methods.dart';
 
 part 'item.g.dart';
@@ -113,8 +114,13 @@ Future<void> addItemToBox(
 void updateItemName({
   required Box box,
   required int index,
-  required String newTitle,
+  required String newName,
+  required BuildContext context,
 }) {
+  if(!validateInputEmpty(context: context, input: newName)) {
+    return;
+  }
+
   final item = box.getAt(index) as Item;
 
   box.putAt(
@@ -129,7 +135,7 @@ void updateItemName({
       tags: item.tags,
       tagColors: item.tagColors,
       details: item.details,
-      name: newTitle,
+      name: newName,
     ),
   );
 }
@@ -290,7 +296,13 @@ void removeItemTag({
   List<int> newTagColors = item.tagColors!;
 
   newTags.removeWhere((element) => element == tagToRemove);
-  newTagColors.removeWhere((element) => element == tagColorToRemove);
+
+  for (int i = 0; i < newTagColors.length; i++) {
+    if (newTagColors[i] == tagColorToRemove) {
+      newTagColors.removeAt(i);
+      break;
+    }
+  }
 
   box.putAt(
     index,

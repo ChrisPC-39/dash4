@@ -37,7 +37,7 @@ void main() async {
 
   final Tag exampleTag = Tag(label: "Tag 1", color: Colors.purple.value);
 
-  if(tagBox.isEmpty) {
+  if (tagBox.isEmpty) {
     tagBox.add(exampleTag);
   }
 
@@ -51,7 +51,11 @@ void main() async {
     final item7 = Item(id: 7, name: 'Item 7', isSection: true);
     final item8 = Item(id: 8, name: 'Item 8');
     final item9 = Item(id: 9, name: 'Item 9');
-    final item10 = Item(id: 10, name: 'Item 10 (with tag)', tags: [exampleTag.label], tagColors: [exampleTag.color]);
+    final item10 = Item(
+        id: 10,
+        name: 'Item 10 (with tag)',
+        tags: [exampleTag.label],
+        tagColors: [exampleTag.color]);
     itemBox.add(item1);
     itemBox.add(item2);
     itemBox.add(item3);
@@ -64,7 +68,7 @@ void main() async {
     itemBox.add(item10);
   }
 
-  if(setupBox.isEmpty) {
+  if (setupBox.isEmpty) {
     setupBox.add(Setup());
   }
 
@@ -86,7 +90,7 @@ class MyApp extends StatelessWidget {
         final Setup setup = setupBox.getAt(0);
 
         return OfflineMainScreen(setup: setup);
-      }
+      },
     );
   }
 }

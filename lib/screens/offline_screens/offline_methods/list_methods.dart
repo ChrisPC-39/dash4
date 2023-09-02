@@ -192,7 +192,8 @@ void showEditDialog(BuildContext context, Item item, Box box, int index) {
               updateItemName(
                 box: box,
                 index: index,
-                newTitle: textEditingController.text,
+                context: context,
+                newName: textEditingController.text,
               );
               Navigator.of(context).pop();
             },

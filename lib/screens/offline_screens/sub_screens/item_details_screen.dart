@@ -47,20 +47,24 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         appBar: subScreenAppBar(title: item.name, context: context),
-        body: Padding(
-          padding: const EdgeInsets.only(left: 15, right: 15),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildDetails(),
-                const PageSectionLabel(title: "Tags"),
-                _buildTags(),
-                const PageSectionLabel(title: "Images"),
-                ImageGridView(index: widget.index),
-              ],
-            ),
-          ),
-        ),
+        body: ValueListenableBuilder(
+            valueListenable: Hive.box(itemBoxName).listenable(),
+            builder: (context, itemBox, _) {
+              return Padding(
+                padding: const EdgeInsets.only(left: 15, right: 15),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildDetails(),
+                      const PageSectionLabel(title: "Tags"),
+                      _buildTags(),
+                      const PageSectionLabel(title: "Images"),
+                      ImageGridView(index: widget.index),
+                    ],
+                  ),
+                ),
+              );
+            }),
       ),
     );
   }
@@ -79,10 +83,10 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
       decoration: InputDecoration(
         hintText: 'Item details',
         filled: true,
-        fillColor: Colors.grey[300],
+        fillColor: Colors.grey[200],
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.0),
-          borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
+          borderSide: BorderSide(color: Colors.grey[100]!, width: 0.0),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.0),
@@ -96,18 +100,22 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
   }
 
   Widget _buildTags() {
-    final tagBox = Hive.box(tagBoxName);
+    int tagListLength = 0;
+
+    if (hasTags(item)) {
+      tagListLength = item.tags!.length;
+    }
 
     return Align(
       alignment: Alignment.centerLeft,
       child: Wrap(
         children: List.generate(
-          tagBox.length + 1,
+          tagListLength + 1,
           (index) {
-            if (index == Hive.box(tagBoxName).length) {
+            if (index == tagListLength) {
               return RawChip(
                 label: const Text("Add tag"),
-                backgroundColor: Colors.grey[300],
+                backgroundColor: Colors.grey[200],
                 avatar: const CircleAvatar(
                   child: Icon(
                     Icons.add,
@@ -131,16 +139,17 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                     updateSelected,
                     () {
                       for (int i = 0; i < isSelected.length; i++) {
-                        final tag = tagBox.getAt(i) as Tag;
+                        final tag = Hive.box(tagBoxName).getAt(i) as Tag;
 
                         if (isSelected[i]) {
-                          addItemTag(
-                            box: Hive.box(itemBoxName),
-                            index: widget.index,
-                            tagToAdd: tag.label,
-                            tagColorToAdd: tag.color,
-                          );
-                          setState(() {});
+                          setState(() {
+                            addItemTag(
+                              box: Hive.box(itemBoxName),
+                              index: widget.index,
+                              tagToAdd: tag.label,
+                              tagColorToAdd: tag.color,
+                            );
+                          });
                         }
                       }
                     },
@@ -149,9 +158,13 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
               );
             }
 
-            if (item.tags == null || item.tags!.isEmpty) {
-              return Container();
-            }
+            // print("TAGs:");
+            // print(item.tags!.length);
+            // print(item.tags);
+            // print("COLORs:");
+            // print(item.tagColors!.length);
+            // print(item.tagColors);
+            // print("----------------");
 
             return Padding(
               padding: const EdgeInsets.only(right: 10),
@@ -176,7 +189,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                     isSelected[index] = false;
                   });
                 },
-                backgroundColor: Colors.grey[300],
+                backgroundColor: Colors.grey[200],
                 selectedColor: Color(item.tagColors![index]),
               ),
             );

@@ -1,14 +1,18 @@
 import 'dart:typed_data';
 
+import 'package:dash4/screens/offline_screens/offline_methods/item_methods.dart';
 import 'package:dash4/screens/offline_screens/sub_screens/item_details_screen.dart';
+import 'package:dash4/widgets/check_button_with_secondary_action.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:badges/badges.dart' as badges;
 
+import '../../../database/editable_object.dart';
 import '../../../database/item.dart';
 import '../../../database/setup.dart';
 import '../../../globals.dart';
+import '../../../widgets/editable_text_with_textfield.dart';
 import '../offline_methods/image_storage_methods.dart';
 import '../offline_methods/list_methods.dart';
 import '../offline_methods/reorder_methods.dart';
@@ -272,8 +276,9 @@ class _ListScreenState extends State<ListScreen> {
                         children: [
                           _itemCheckboxCancelIcon(index, item, box),
                           Flexible(
-                            child: GestureDetector(
-                              onTap: () {
+                            child: EditableTextWithTextField(
+                              index: index,
+                              onTapCallback: () {
                                 textEditingController.text = item.name;
 
                                 updateItemEditing(
@@ -282,7 +287,19 @@ class _ListScreenState extends State<ListScreen> {
                                   isEditing: true,
                                 );
                               },
-                              child: _itemTextField(index, item, box),
+                              editableObject: EditableObject(
+                                name: item.name,
+                                isEditing: item.isEditing,
+                              ),
+                              controller: textEditingController,
+                              onSubmittedCallback: (newVal) {
+                                commitItemEditChanges(
+                                  box: box,
+                                  index: index,
+                                  context: context,
+                                  newName: textEditingController.text,
+                                );
+                              },
                             ),
                           ),
                           _itemDeleteCheckButton(index, item, box),
@@ -335,7 +352,8 @@ class _ListScreenState extends State<ListScreen> {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => ItemDetailsScreen(index: index),
+                            builder: (context) =>
+                                ItemDetailsScreen(index: index),
                           ),
                         );
                       },
@@ -484,104 +502,73 @@ class _ListScreenState extends State<ListScreen> {
           );
   }
 
-  Widget _itemTextField(int index, Item item, Box box) {
-    return item.isEditing
-        ? TextField(
-            autofocus: true,
-            textAlign: TextAlign.center,
-            controller: textEditingController,
-            style: TextStyle(fontSize: setup.fontSize),
-            onSubmitted: (value) {
-              updateItemEditing(
-                box: box,
-                index: index,
-                isEditing: false,
-              );
-
-              updateItemName(
-                box: box,
-                index: index,
-                newTitle: textEditingController.text,
-              );
-            },
-          )
-        : Text(
-            item.name,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: setup.fontSize),
-          );
-  }
-
   Widget _itemDeleteCheckButton(int index, Item item, Box box) {
-    return item.isEditing
-        ? IconButton(
-            onPressed: () {
-              updateItemEditing(
-                box: box,
-                index: index,
-                isEditing: false,
-              );
-
-              updateItemName(
-                box: box,
-                index: index,
-                newTitle: textEditingController.text,
-              );
-            },
-            icon: Icon(Icons.check, size: setup.fontSize + 7),
-          )
-        : Transform.scale(
-            scale: setup.fontSize / 20,
-            child: PopupMenuButton(
-              onSelected: (value) {
-                switch (value) {
-                  case "delete":
-                    deleteItemFromBox(index);
-                    break;
-                  case "openDetails":
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => ItemDetailsScreen(index: index),
-                      ),
-                    );
-                    break;
-                  default:
-                    break;
-                }
-              },
-              itemBuilder: (BuildContext context) {
-                return [
-                  PopupMenuItem(
-                    value: 'openDetails',
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Open details'),
-                        Icon(
-                          Icons.open_in_new,
-                          size: 22,
-                          color: Theme.of(context)
-                              .buttonTheme
-                              .colorScheme!
-                              .background,
-                        ),
-                      ],
-                    ),
+    return CheckButtonWithSecondaryAction(
+      editableObject: EditableObject(
+        name: item.name,
+        isEditing: item.isEditing,
+      ),
+      onCheckPressCallback: () {
+        commitItemEditChanges(
+          box: box,
+          index: index,
+          context: context,
+          newName: textEditingController.text,
+        );
+      },
+      secondaryAction: Transform.scale(
+        scale: setup.fontSize / 20,
+        child: PopupMenuButton(
+          onSelected: (value) {
+            switch (value) {
+              case "delete":
+                deleteItemFromBox(index);
+                break;
+              case "openDetails":
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => ItemDetailsScreen(index: index),
                   ),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Delete'),
-                        Icon(Icons.delete_outline, color: Colors.red[400]),
-                      ],
+                );
+                break;
+              default:
+                break;
+            }
+          },
+          itemBuilder: (BuildContext context) {
+            return [
+              PopupMenuItem(
+                value: 'openDetails',
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Open details'),
+                    Icon(
+                      Icons.open_in_new,
+                      size: 22,
+                      color: Theme.of(context)
+                          .buttonTheme
+                          .colorScheme!
+                          .background,
                     ),
-                  ),
-                ];
-              },
-            ),
-          );
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Delete'),
+                    Icon(Icons.delete_outline, color: Colors.red[400]),
+                  ],
+                ),
+              ),
+            ];
+          },
+        ),
+      ),
+    );
   }
 
   Widget _sectionDropIcon(Item item, BuildContext context) {

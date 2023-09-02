@@ -1,8 +1,9 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 
-const String itemBoxName = "itemBoxName${58}";
+const String itemBoxName = "itemBoxName${60}";
 const String setupBoxName = "setupBoxName${3}";
-const String tagBoxName = "tagBoxName${1}";
+const String tagBoxName = "tagBoxName${2}";
 
 ThemeData lightTheme = ThemeData.light().copyWith(
   useMaterial3: true,
@@ -28,3 +29,18 @@ ThemeData darkTheme = ThemeData.dark().copyWith(
     ),
   ),
 );
+
+void showFlushbar(
+    BuildContext context, {
+      String title = "Field is empty",
+      String message = "Please input something...",
+    }) {
+  Flushbar(
+    flushbarPosition: FlushbarPosition.TOP,
+    title: title,
+    message: message,
+    duration: const Duration(seconds: 3),
+    margin: const EdgeInsets.all(8),
+    borderRadius: BorderRadius.circular(8),
+  ).show(context);
+}
