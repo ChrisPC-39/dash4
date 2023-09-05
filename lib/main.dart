@@ -51,11 +51,7 @@ void main() async {
     final item7 = Item(id: 7, name: 'Item 7', isSection: true);
     final item8 = Item(id: 8, name: 'Item 8');
     final item9 = Item(id: 9, name: 'Item 9');
-    final item10 = Item(
-        id: 10,
-        name: 'Item 10 (with tag)',
-        tags: [exampleTag.label],
-        tagColors: [exampleTag.color]);
+    final item10 = Item(id: 10, name: 'Item 10 (with tag)', tagPointer: [0]);
     itemBox.add(item1);
     itemBox.add(item2);
     itemBox.add(item3);

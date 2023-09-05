@@ -103,7 +103,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
     int tagListLength = 0;
 
     if (hasTags(item)) {
-      tagListLength = item.tags!.length;
+      tagListLength = item.tagPointer!.length;
     }
 
     return Align(
@@ -146,8 +146,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                             addItemTag(
                               box: Hive.box(itemBoxName),
                               index: widget.index,
-                              tagToAdd: tag.label,
-                              tagColorToAdd: tag.color,
+                              tagIndexToAdd: i,
                             );
                           });
                         }
@@ -158,20 +157,14 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
               );
             }
 
-            // print("TAGs:");
-            // print(item.tags!.length);
-            // print(item.tags);
-            // print("COLORs:");
-            // print(item.tagColors!.length);
-            // print(item.tagColors);
-            // print("----------------");
+            final tag = Hive.box(tagBoxName).getAt(index) as Tag;
 
             return Padding(
               padding: const EdgeInsets.only(right: 10),
               child: RawChip(
                 showCheckmark: false,
                 label: Text(
-                  item.tags![index],
+                  tag.label,
                   style: const TextStyle(
                     color: Colors.white,
                   ),
@@ -182,15 +175,14 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                     removeItemTag(
                       box: Hive.box(itemBoxName),
                       index: widget.index,
-                      tagToRemove: item.tags![index],
-                      tagColorToRemove: item.tagColors![index],
+                      tagIndexToRemove: item.tagPointer![index],
                     );
 
                     isSelected[index] = false;
                   });
                 },
                 backgroundColor: Colors.grey[200],
-                selectedColor: Color(item.tagColors![index]),
+                selectedColor: Color(tag.color),
               ),
             );
           },

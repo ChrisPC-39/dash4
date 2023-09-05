@@ -1,6 +1,5 @@
 //flutter pub run build_runner build --delete-conflicting-outputs
 
-import 'package:dash4/database/tag.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -35,13 +34,10 @@ class Item {
   final List<Uint8List>? images;
 
   @HiveField(7)
-  final List<String>? tags;
+  final String details;
 
   @HiveField(8)
-  final List<int>? tagColors;
-
-  @HiveField(9)
-  final String details;
+  final List<int>? tagPointer;
 
   Item({
     required this.name,
@@ -52,8 +48,7 @@ class Item {
     this.isVisible = true,
     this.details = "",
     this.images,
-    this.tags,
-    this.tagColors,
+    this.tagPointer,
   });
 }
 
@@ -89,8 +84,7 @@ Future<List<Uint8List>> getImages() async {
 
 Future<void> addItemToBox(
     TextEditingController searchBar,
-    List<String> tagLabels,
-    List<int> tagColors,
+    List<int> tagPointers,
     BuildContext context,
     ) async {
   final box = Hive.box(itemBoxName);
@@ -101,8 +95,7 @@ Future<void> addItemToBox(
     0,
     Item(
       name: searchBar.text,
-      tags: tagLabels,
-      tagColors: tagColors,
+      tagPointer: tagPointers,
       id: box.length + 1,
     ),
   );
@@ -132,8 +125,7 @@ void updateItemName({
       isEditing: item.isEditing,
       isVisible: item.isVisible,
       images: item.images,
-      tags: item.tags,
-      tagColors: item.tagColors,
+      tagPointer: item.tagPointer,
       details: item.details,
       name: newName,
     ),
@@ -156,8 +148,7 @@ void updateItemSelected({
       isEditing: item.isEditing,
       isVisible: item.isVisible,
       images: item.images,
-      tags: item.tags,
-      tagColors: item.tagColors,
+      tagPointer: item.tagPointer,
       details: item.details,
       isSelected: isSelected,
     ),
@@ -182,8 +173,7 @@ void updateItemEditing({
       isSelected: item.isSelected,
       isVisible: item.isVisible,
       images: item.images,
-      tags: item.tags,
-      tagColors: item.tagColors,
+      tagPointer: item.tagPointer,
       details: item.details,
       isEditing: isEditing,
     ),
@@ -203,8 +193,7 @@ void disableAllEditItems(Box box) {
         isSelected: item.isSelected,
         isVisible: item.isVisible,
         images: item.images,
-        tags: item.tags,
-        tagColors: item.tagColors,
+        tagPointer: item.tagPointer,
         details: item.details,
         isEditing: false,
       ),
@@ -228,8 +217,7 @@ void updateItemVisibility({
       isSelected: item.isSelected,
       isEditing: item.isEditing,
       images: item.images,
-      tags: item.tags,
-      tagColors: item.tagColors,
+      tagPointer: item.tagPointer,
       details: item.details,
       isVisible: isVisible,
     ),
@@ -252,8 +240,7 @@ void updateItemImages({
       isSelected: item.isSelected,
       isEditing: item.isEditing,
       isVisible: item.isVisible,
-      tags: item.tags,
-      tagColors: item.tagColors,
+      tagPointer: item.tagPointer,
       details: item.details,
       images: images,
     ),
@@ -276,8 +263,7 @@ void updateItemDetails({
       isSelected: item.isSelected,
       isEditing: item.isEditing,
       isVisible: item.isVisible,
-      tags: item.tags,
-      tagColors: item.tagColors,
+      tagPointer: item.tagPointer,
       images: item.images,
       details: newDetails,
     ),
@@ -287,28 +273,12 @@ void updateItemDetails({
 void removeItemTag({
   required Box box,
   required int index,
-  required String tagToRemove,
-  required int tagColorToRemove,
+  required int tagIndexToRemove,
 }) {
   final item = box.getAt(index) as Item;
 
-  List<String> newTags = item.tags!;
-  List<int> newTagColors = item.tagColors!;
-
-  newTags.removeWhere((element) => element == tagToRemove);
-
-  //The tag index corresponds to the tagColor index, so they should
-  //be removed at the same time.
-  //Also important to note that colors are not unique
-  for(int i = 0; i < newTags.length; i++) {
-    if(newTags[i] == tagToRemove) {
-      newTags.removeAt(i);
-      newTagColors.removeAt(i);
-      break;
-    }
-  }
-
-
+  List<int> newTagsPointers = item.tagPointer!;
+  newTagsPointers.remove(tagIndexToRemove);
 
   box.putAt(
     index,
@@ -321,8 +291,7 @@ void removeItemTag({
       isVisible: item.isVisible,
       images: item.images,
       details: item.details,
-      tags: newTags,
-      tagColors: newTagColors,
+      tagPointer: newTagsPointers,
     ),
   );
 }
@@ -330,20 +299,17 @@ void removeItemTag({
 void addItemTag({
   required Box box,
   required int index,
-  required String tagToAdd,
-  required int tagColorToAdd,
+  required int tagIndexToAdd,
 }) {
   final item = box.getAt(index) as Item;
 
-  List<String> newTags = item.tags == null ? [] : item.tags!;
-  List<int> newTagColors = item.tagColors == null ? [] : item.tagColors!;
+  List<int> newTagsPointers = item.tagPointer == null ? [] : item.tagPointer!;
 
-  if(newTags.contains(tagToAdd)) {
+  if(newTagsPointers.contains(tagIndexToAdd)) {
     return;
   }
 
-  newTags.add(tagToAdd);
-  newTagColors.add(tagColorToAdd);
+  newTagsPointers.add(tagIndexToAdd);
 
   box.putAt(
     index,
@@ -356,8 +322,7 @@ void addItemTag({
       isVisible: item.isVisible,
       images: item.images,
       details: item.details,
-      tags: newTags,
-      tagColors: newTagColors,
+      tagPointer: newTagsPointers,
     ),
   );
 }

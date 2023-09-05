@@ -23,17 +23,16 @@ class ItemAdapter extends TypeAdapter<Item> {
       isSelected: fields[3] as bool,
       isEditing: fields[4] as bool,
       isVisible: fields[5] as bool,
-      details: fields[9] as String,
+      details: fields[7] as String,
       images: (fields[6] as List?)?.cast<Uint8List>(),
-      tags: (fields[7] as List?)?.cast<String>(),
-      tagColors: (fields[8] as List?)?.cast<int>(),
+      tagPointer: (fields[8] as List?)?.cast<int>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, Item obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -49,11 +48,9 @@ class ItemAdapter extends TypeAdapter<Item> {
       ..writeByte(6)
       ..write(obj.images)
       ..writeByte(7)
-      ..write(obj.tags)
+      ..write(obj.details)
       ..writeByte(8)
-      ..write(obj.tagColors)
-      ..writeByte(9)
-      ..write(obj.details);
+      ..write(obj.tagPointer);
   }
 
   @override

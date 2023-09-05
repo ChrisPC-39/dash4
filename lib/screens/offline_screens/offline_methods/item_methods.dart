@@ -9,7 +9,7 @@ import '../../../globals.dart';
 import 'image_storage_methods.dart';
 
 bool hasTags(Item item) {
-  return item.tags != null && item.tags!.isNotEmpty;
+  return item.tagPointer != null && item.tagPointer!.isNotEmpty;
 }
 
 bool validateInputEmpty(
@@ -72,15 +72,11 @@ void addNewItemWithTags({
   required BuildContext context,
   required Function(int index) updateSelectedList,
 }) {
-  List<String> tagLabels = [];
-  List<int> tagColors = [];
+  List<int> newTagPointers = [];
 
   for (int i = 0; i < isSelected.length; i++) {
     if (isSelected[i]) {
-      final tag = Hive.box(tagBoxName).getAt(i) as Tag;
-
-      tagLabels.add(tag.label);
-      tagColors.add(tag.color);
+      newTagPointers.add(i);
 
       isSelected[i] = false;
       updateSelectedList(i);
@@ -89,8 +85,7 @@ void addNewItemWithTags({
 
   addItemToBox(
     controller,
-    tagLabels,
-    tagColors,
+    newTagPointers,
     context,
   );
 }
