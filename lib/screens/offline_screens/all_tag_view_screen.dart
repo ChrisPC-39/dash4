@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../database/editable_object.dart';
+import '../../database/setup.dart';
 import '../../database/tag.dart';
 import '../../globals.dart';
 import '../../widgets/check_button_with_secondary_action.dart';
@@ -21,6 +23,56 @@ class _AllTagViewScreenState extends State<AllTagViewScreen> {
   TextEditingController searchBarController = TextEditingController();
   TextEditingController tagTextController = TextEditingController();
 
+  Color pickerColor = Colors.blue;
+  Color currentColor = Colors.blue;
+
+  void changeColor(Color color, int index) {
+    setState(() => pickerColor = color);
+  }
+
+  void showColorPicker(int index) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Pick a color!'),
+          content: SingleChildScrollView(
+            child: MaterialPicker(
+              pickerColor: pickerColor,
+              onColorChanged: (newColor) => changeColor(newColor, index),
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.black),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Done'),
+              onPressed: () {
+                setState(() => currentColor = pickerColor);
+
+                updateTagColor(
+                  box: Hive.box(tagBoxName),
+                  index: index,
+                  newColor: pickerColor.value,
+                  context: context,
+                );
+
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -31,13 +83,14 @@ class _AllTagViewScreenState extends State<AllTagViewScreen> {
           valueListenable: Hive.box(tagBoxName).listenable(),
           builder: (context, value, _) {
             final tagBox = Hive.box(tagBoxName);
+            final Setup setup = Hive.box(setupBoxName).getAt(0) as Setup;
 
             return Stack(
               children: [
                 ListView.builder(
                   itemCount: tagBox.length + 1,
                   itemBuilder: (context, tagIndex) {
-                    if(tagIndex == tagBox.length) {
+                    if (tagIndex == tagBox.length) {
                       return const SizedBox(height: 100);
                     }
 
@@ -98,23 +151,83 @@ class _AllTagViewScreenState extends State<AllTagViewScreen> {
                               ),
                               const SizedBox(width: 10),
                               CheckButtonWithSecondaryAction(
-                                editableObject: EditableObject(
-                                  name: tag.label,
-                                  isEditing: tag.isEditing,
-                                ),
-                                onCheckPressCallback: () {
-                                  commitTagEditChanges(
-                                    box: tagBox,
-                                    index: tagIndex,
-                                    context: context,
-                                    newLabel: tagTextController.text,
-                                  );
-                                },
-                                secondaryAction: IconButton(
-                                  icon: const Icon(Icons.color_lens),
-                                  onPressed: () {},
-                                ),
-                              ),
+                                  editableObject: EditableObject(
+                                    name: tag.label,
+                                    isEditing: tag.isEditing,
+                                  ),
+                                  onCheckPressCallback: () {
+                                    commitTagEditChanges(
+                                      box: tagBox,
+                                      index: tagIndex,
+                                      context: context,
+                                      newLabel: tagTextController.text,
+                                    );
+                                  },
+                                  secondaryAction:
+                                      CheckButtonWithSecondaryAction(
+                                    editableObject: EditableObject(
+                                      name: tag.label,
+                                      isEditing: tag.isEditing,
+                                    ),
+                                    onCheckPressCallback: () {},
+                                    secondaryAction: Transform.scale(
+                                      scale: setup.fontSize / 20,
+                                      child: PopupMenuButton(
+                                        onSelected: (value) {
+                                          switch (value) {
+                                            case "delete":
+                                              deleteTag(
+                                                box: tagBox,
+                                                index: tagIndex,
+                                                context: context,
+                                              );
+                                              break;
+                                            case "changeColor":
+                                              showColorPicker(tagIndex);
+                                              break;
+                                            default:
+                                              break;
+                                          }
+                                        },
+                                        itemBuilder: (BuildContext context) {
+                                          return [
+                                            PopupMenuItem(
+                                              value: 'changeColor',
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  const Text('Change color'),
+                                                  Icon(
+                                                    Icons.color_lens,
+                                                    size: 22,
+                                                    color: Theme.of(context)
+                                                        .buttonTheme
+                                                        .colorScheme!
+                                                        .background,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            PopupMenuItem(
+                                              value: 'delete',
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  const Text('Delete'),
+                                                  Icon(Icons.delete_outline,
+                                                      color: Colors.red[400]),
+                                                ],
+                                              ),
+                                            ),
+                                          ];
+                                        },
+                                      ),
+                                    ),
+                                  )),
                             ],
                           ),
                         ),
@@ -133,7 +246,8 @@ class _AllTagViewScreenState extends State<AllTagViewScreen> {
                       onChangedCallback: (String newVal) => setState(() {}),
                       onSendCallback: () => setState(() {
                         if (!validateInputEmpty(
-                            context: context, input: searchBarController.text)) {
+                            context: context,
+                            input: searchBarController.text)) {
                           return;
                         }
 

@@ -259,7 +259,6 @@ class _ItemCardState extends State<ItemCard> {
                                     },
                                   ),
                                 ),
-                                //DELETE BUTTON WITH CHECK (IF EDITING)
                                 CheckButtonWithSecondaryAction(
                                   editableObject: EditableObject(
                                     name: widget.item.name,

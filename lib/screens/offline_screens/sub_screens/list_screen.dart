@@ -1,25 +1,13 @@
-import 'dart:typed_data';
-
-import 'package:dash4/screens/offline_screens/offline_methods/item_methods.dart';
-import 'package:dash4/screens/offline_screens/sub_screens/item_details_screen.dart';
-import 'package:dash4/widgets/cancel_button_with_secondary_action.dart';
-import 'package:dash4/widgets/check_button_with_secondary_action.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:badges/badges.dart' as badges;
 
-import '../../../database/editable_object.dart';
 import '../../../database/item.dart';
 import '../../../database/setup.dart';
-import '../../../database/tag.dart';
 import '../../../globals.dart';
-import '../../../widgets/editable_text_with_textfield.dart';
 import '../../../widgets/item_card.dart';
-import '../offline_methods/image_storage_methods.dart';
 import '../offline_methods/list_methods.dart';
 import '../offline_methods/reorder_methods.dart';
-import 'image_screen.dart';
 
 class ListScreen extends StatefulWidget {
   final TextEditingController searchBar;
@@ -57,7 +45,7 @@ class _ListScreenState extends State<ListScreen> {
       child: Scaffold(
         body: ValueListenableBuilder(
           valueListenable: Hive.box(itemBoxName).listenable(),
-          builder: (context, Box itemBox, _) {
+          builder: (context, itemBox, _) {
             return ReorderableList(
               onReorder: (oldIndex, newIndex) {
                 if (newIndex >= itemBox.length) {

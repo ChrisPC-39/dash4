@@ -5,6 +5,8 @@ import 'package:dash4/screens/offline_screens/offline_methods/item_methods.dart'
 import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
 
+import 'item.dart';
+
 part 'tag.g.dart';
 
 @HiveType(typeId: 2)
@@ -121,4 +123,48 @@ void updateTagLabel({
       label: newLabel,
     ),
   );
+}
+
+void updateTagColor({
+  required Box box,
+  required int index,
+  required int newColor,
+  required BuildContext context,
+}) {
+  final tag = box.getAt(index) as Tag;
+
+  box.putAt(
+    index,
+    Tag(
+      isEditing: tag.isEditing,
+      label: tag.label,
+      color: newColor,
+    ),
+  );
+}
+
+void deleteTag({
+  required Box box,
+  required int index,
+  required BuildContext context,
+}) {
+  final tag = box.getAt(index) as Tag;
+  final itemBox = Hive.box(itemBoxName);
+
+  for(int i = 0; i < itemBox.length; i++) {
+    final item = itemBox.getAt(i) as Item;
+
+    if(item.tagPointer == null) {
+      continue;
+    }
+
+    for(int j = 0; j < item.tagPointer!.length; j++) {
+      if(item.tagPointer![j] == index) {
+        item.tagPointer!.removeAt(j);
+        break;
+      }
+    }
+  }
+
+  box.deleteAt(index);
 }

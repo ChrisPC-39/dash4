@@ -1,9 +1,9 @@
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 
-const String itemBoxName = "itemBoxName${61}";
+const String itemBoxName = "itemBoxName${62}";
 const String setupBoxName = "setupBoxName${3}";
-const String tagBoxName = "tagBoxName${2}";
+const String tagBoxName = "tagBoxName${3}";
 
 ThemeData lightTheme = ThemeData.light().copyWith(
   useMaterial3: true,
